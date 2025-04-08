@@ -1,6 +1,6 @@
 dados = {
     "alunos": [
-        {"id": 1, "nome": "Renata", "idade": 19, "turma_id": 1, "data_nascimento": "2007-01-01", "nota_1_semestre": 8.5, "nota_2_semestre": 7.5, "media_final": 8.0},
+        {"id": 1, "nome": "Renata", "idade": 19, "turma_id": 1, "data_nascimento": "2007-01-01", "nota_1_semestre": 8.5, "nota_2_semestre": 7.5, "media": 8.0},
     ]
 }
 
