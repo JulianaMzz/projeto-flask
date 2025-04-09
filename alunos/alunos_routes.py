@@ -1,7 +1,5 @@
-# alunos_routes.py
-
-from flask import Blueprint, request, jsonify
-from .alunos_model import (
+from flask import Blueprint, jsonify, request
+from alunos.alunos_model import (
     listar_alunos,
     aluno_por_id,
     adicionar_aluno,
@@ -9,59 +7,53 @@ from .alunos_model import (
     excluir_aluno
 )
 
+alunos_routes = Blueprint('alunos_routes', __name__)
 
-alunos_blueprint = Blueprint('alunos', __name__)
 
-@alunos_blueprint.route('/alunos', methods=['GET'])
-def get_alunos():
-    """Rota para listar todos os alunos."""
+@alunos_routes.route('/alunos', methods=['GET'])
+def rota_listar_alunos():
     return jsonify(listar_alunos())
 
-@alunos_blueprint.route('/alunos/<int:id_aluno>', methods=['GET'])
-def get_aluno(id_aluno):
-    """Rota para obter um aluno pelo ID."""
+
+@alunos_routes.route('/alunos/<int:id_aluno>', methods=['GET'])
+def rota_aluno_por_id(id_aluno):
     try:
         aluno = aluno_por_id(id_aluno)
         return jsonify(aluno)
-    except ValueError:
-        return jsonify({'error': 'Aluno não encontrado'}), 404
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
 
-@alunos_blueprint.route('/alunos', methods=['POST'])
-def create_aluno():
-    """Rota para criar um novo aluno."""
-    dados = request.json
-    if not dados or 'nome' not in dados or 'idade' not in dados or 'turma_id' not in dados:
-        return jsonify({"error": "Nome, idade e turma_id são obrigatórios"}), 400
+@alunos_routes.route('/alunos', methods=['POST'])
+def rota_adicionar_aluno():
+    novo_aluno = request.get_json()
 
-    novo_aluno = {
-        "id": len(listar_alunos()) + 1,
-        "nome": dados["nome"],
-        "idade": dados["idade"],
-        "turma_id": dados["turma_id"],
-        "data_nascimento": dados.get("data_nascimento", ""),
-        "nota_1_semestre": dados.get("nota_1_semestre", 0.0),
-        "nota_2_semestre": dados.get("nota_2_semestre", 0.0),
-        "media": (dados.get("nota_1_semestre", 0.0) + dados.get("nota_2_semestre", 0.0)) / 2
-    }
+    if not novo_aluno:
+        return jsonify({'erro': 'Dados do aluno não fornecidos'}), 400
 
-    adicionar_aluno(novo_aluno)
-    return jsonify(novo_aluno), 201
-
-@alunos_blueprint.route('/alunos/<int:id_aluno>', methods=['PUT'])
-def update_aluno(id_aluno):
-    """Rota para atualizar um aluno existente."""
-    dados = request.json
     try:
-        atualizar_aluno(id_aluno, dados)
-        return jsonify(aluno_por_id(id_aluno))
-    except ValueError:
-        return jsonify({'error': 'Aluno não encontrado'}), 404
+        adicionar_aluno(novo_aluno)
+        return jsonify({'mensagem': 'Aluno adicionado com sucesso'}), 201
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 400
 
-@alunos_blueprint.route('/alunos/<int:id_aluno>', methods=['DELETE'])
-def delete_aluno(id_aluno):
-    """Rota para deletar um aluno pelo ID."""
+
+@alunos_routes.route('/alunos/<int:id_aluno>', methods=['PUT'])
+def rota_atualizar_aluno(id_aluno):
+    novos_dados = request.get_json()
+
+    if not novos_dados:
+        return jsonify({'erro': 'Dados para atualização não fornecidos'}), 400
+
+    try:
+        atualizar_aluno(id_aluno, novos_dados)
+        return jsonify({'mensagem': 'Aluno atualizado com sucesso'})
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
+
+@alunos_routes.route('/alunos/<int:id_aluno>', methods=['DELETE'])
+def rota_excluir_aluno(id_aluno):
     try:
         excluir_aluno(id_aluno)
-        return jsonify({"message": "Aluno removido com sucesso"}), 200
-    except ValueError:
-        return jsonify({'error': 'Aluno não encontrado'}), 404
+        return jsonify({'mensagem': 'Aluno excluído com sucesso'})
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
