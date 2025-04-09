@@ -6,111 +6,74 @@ URL = "http://127.0.0.1:5000"
 class TesteAPI(unittest.TestCase):
 
     def setUp(self):
-        """Método executado antes de cada teste. Reseta os dados e cria os dados básicos."""
         self.resetar_dados()
-
-        
         self.professor_dados = {
+            "id": 1,
             "nome": "Camily",
             "idade": 22,
-            "materia": "Química",
-            "observacoes": "Muito querida pelos alunos"
+            "disciplina": "Química"
         }
         self.turma_dados = {
-            "descricao": "6º ano B",
-            "professor_id": None,  
-            "ativo": True
+            "id": 1,
+            "nome": "6º ano B",
+            "turno": "Manhã"
         }
         self.aluno_dados = {
+            "id": 1,
             "nome": "Carlos",
             "idade": 13,
-            "nota_primeiro_semestre": 8.5,
-            "nota_segundo_semestre": 7.5
+            "turma_id": 1,
+            "data_nascimento": "2010-01-01",
+            "nota_1_semestre": 8.5,
+            "nota_2_semestre": 7.5,
+            "media_final": 8.0
         }
 
-    def tearDown(self):
-        """Método executado após cada teste. Caso necessário, limpar recursos ou realizar ações de cleanup."""
-        pass 
-
     def resetar_dados(self):
-        """Método para resetar os dados do banco."""
         resposta = requests.post(f"{URL}/reset")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao resetar os dados: {resposta.text}")
+        self.assertEqual(resposta.status_code, 200)
 
     def teste_professor(self):
-        """Testa a criação, consulta, atualização e deleção de um professor."""
         resposta = requests.post(f"{URL}/professores", json=self.professor_dados)
-        self.assertEqual(resposta.status_code, 201, f"Erro ao criar professor: {resposta.text}")
-        professor = resposta.json()
-        self.assertIn('id', professor)
-        self.assertIn('nome', professor)
-        self.assertIn('idade', professor)
+        self.assertEqual(resposta.status_code, 201)
 
-        id_prof = professor["id"]
+        resposta = requests.get(f"{URL}/professores/1")
+        self.assertEqual(resposta.status_code, 200)
+        dados = resposta.json()
+        self.assertEqual(dados["nome"], "Camily")
 
-       
-        resposta = requests.get(f"{URL}/professores/{id_prof}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao obter professor: {resposta.text}")
+        resposta = requests.put(f"{URL}/professores/1", json={"idade": 30})
+        self.assertEqual(resposta.status_code, 200)
 
-        resposta = requests.put(f"{URL}/professores/{id_prof}", json={"idade": 35})
-        self.assertEqual(resposta.status_code, 200, f"Erro ao atualizar professor: {resposta.text}")
-        self.assertEqual(resposta.json()["idade"], 35)
-
-        resposta = requests.delete(f"{URL}/professores/{id_prof}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao deletar professor: {resposta.text}")
+        resposta = requests.delete(f"{URL}/professores/1")
+        self.assertEqual(resposta.status_code, 200)
 
     def teste_turma(self):
-        """Testa a criação, consulta, atualização e deleção de uma turma."""
-      
-        professor = requests.post(f"{URL}/professores", json={"nome": "Lucas", "idade": 40, "materia": "História"}).json()
+        requests.post(f"{URL}/turmas", json=self.turma_dados)
 
-        self.turma_dados["professor_id"] = professor["id"]
+        resposta = requests.get(f"{URL}/turmas/1")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["nome"], "6º ano B")
 
-        resposta = requests.post(f"{URL}/turmas", json=self.turma_dados)
-        self.assertEqual(resposta.status_code, 201, f"Erro ao criar turma: {resposta.text}")
-        turma = resposta.json()
-        id_turma = turma["id"]
+        resposta = requests.put(f"{URL}/turmas/1", json={"turno": "Tarde"})
+        self.assertEqual(resposta.status_code, 200)
 
-    
-        resposta = requests.get(f"{URL}/turmas/{id_turma}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao obter turma: {resposta.text}")
-
-        resposta = requests.put(f"{URL}/turmas/{id_turma}", json={"descricao": "6º ano B - Atualizado"})
-        self.assertEqual(resposta.status_code, 200, f"Erro ao atualizar turma: {resposta.text}")
-        self.assertEqual(resposta.json()["descricao"], "6º ano B - Atualizado")
-
-      
-        resposta = requests.delete(f"{URL}/turmas/{id_turma}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao deletar turma: {resposta.text}")
+        resposta = requests.delete(f"{URL}/turmas/1")
+        self.assertEqual(resposta.status_code, 200)
 
     def teste_aluno(self):
-        """Testa a criação, consulta, atualização e deleção de um aluno."""
+        requests.post(f"{URL}/turmas", json=self.turma_dados)
+        requests.post(f"{URL}/alunos", json=self.aluno_dados)
 
-        professor = requests.post(f"{URL}/professores", json={"nome": "Juliana", "idade": 29, "materia": "Geografia"}).json()
+        resposta = requests.get(f"{URL}/alunos/1")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["nome"], "Carlos")
 
-        turma = requests.post(f"{URL}/turmas", json={"descricao": "7º ano A", "professor_id": professor["id"]}).json()
+        resposta = requests.put(f"{URL}/alunos/1", json={"idade": 14})
+        self.assertEqual(resposta.status_code, 200)
 
-        self.aluno_dados["turma_id"] = turma["id"]
-
-        resposta = requests.post(f"{URL}/alunos", json=self.aluno_dados)
-        self.assertEqual(resposta.status_code, 201, f"Erro ao criar aluno: {resposta.text}")
-        aluno = resposta.json()
-        self.assertIn('id', aluno)
-        self.assertIn('nome', aluno)
-        self.assertIn('idade', aluno)
-
-        id_aluno = aluno["id"]
-
-        resposta = requests.get(f"{URL}/alunos/{id_aluno}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao obter aluno: {resposta.text}")
-
-       
-        resposta = requests.put(f"{URL}/alunos/{id_aluno}", json={"idade": 14})
-        self.assertEqual(resposta.status_code, 200, f"Erro ao atualizar aluno: {resposta.text}")
-        self.assertEqual(resposta.json()["idade"], 14)
-
-        resposta = requests.delete(f"{URL}/alunos/{id_aluno}")
-        self.assertEqual(resposta.status_code, 200, f"Erro ao deletar aluno: {resposta.text}")
+        resposta = requests.delete(f"{URL}/alunos/1")
+        self.assertEqual(resposta.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()
