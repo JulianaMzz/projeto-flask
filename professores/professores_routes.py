@@ -1,7 +1,5 @@
-# professores_routes.py
-
-from flask import Blueprint, request, jsonify
-from .professores_model import (
+from flask import Blueprint, jsonify, request
+from professores.professores_model import (
     listar_professores,
     professor_por_id,
     adicionar_professor,
@@ -9,61 +7,46 @@ from .professores_model import (
     excluir_professor
 )
 
-# Criando o blueprint para a rota de professores
-professores_blueprint = Blueprint('professores', __name__)
+professores_routes = Blueprint('professores_routes', __name__)
 
-# Rota para listar todos os professores
-@professores_blueprint.route('/professores', methods=['GET'])
-def get_professores():
-    """Rota para listar todos os professores."""
+
+@professores_routes.route('/professores', methods=['GET'])
+def rota_listar_professores():
     return jsonify(listar_professores())
 
-# Rota para obter um professor pelo ID
-@professores_blueprint.route('/professores/<int:id_professor>', methods=['GET'])
-def get_professor(id_professor):
-    """Rota para obter um professor pelo ID."""
+
+@professores_routes.route('/professores/<int:id_professor>', methods=['GET'])
+def rota_professor_por_id(id_professor):
     try:
         professor = professor_por_id(id_professor)
         return jsonify(professor)
-    except ValueError:
-        return jsonify({'error': 'Professor não encontrado'}), 404
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
 
-# Rota para criar um novo professor
-@professores_blueprint.route('/professores', methods=['POST'])
-def create_professor():
-    """Rota para criar um novo professor."""
-    dados = request.json
-    if not dados or 'nome' not in dados or 'idade' not in dados or 'materia' not in dados:
-        return jsonify({"error": "Nome, idade e matéria são obrigatórios"}), 400
 
-    novo_professor = {
-        "id": len(listar_professores()) + 1,
-        "nome": dados["nome"],
-        "idade": dados["idade"],
-        "materia": dados["materia"],
-        "observacoes": dados.get("observacoes", "")
-    }
-
+@professores_routes.route('/professores', methods=['POST'])
+def rota_adicionar_professor():
+    novo_professor = request.get_json()
+    if not novo_professor:
+        return jsonify({'erro': 'Dados inválidos ou ausentes'}), 400
     adicionar_professor(novo_professor)
-    return jsonify(novo_professor), 201
+    return jsonify({'mensagem': 'Professor adicionado com sucesso'}), 201
 
-# Rota para atualizar um professor existente
-@professores_blueprint.route('/professores/<int:id_professor>', methods=['PUT'])
-def update_professor(id_professor):
-    """Rota para atualizar um professor existente."""
-    dados = request.json
+
+@professores_routes.route('/professores/<int:id_professor>', methods=['PUT'])
+def rota_atualizar_professor(id_professor):
+    novos_dados = request.get_json()
     try:
-        atualizar_professor(id_professor, dados)
-        return jsonify(professor_por_id(id_professor))
-    except ValueError:
-        return jsonify({'error': 'Professor não encontrado'}), 404
+        atualizar_professor(id_professor, novos_dados)
+        return jsonify({'mensagem': 'Professor atualizado com sucesso'})
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
 
-# Rota para deletar um professor pelo ID
-@professores_blueprint.route('/professores/<int:id_professor>', methods=['DELETE'])
-def delete_professor(id_professor):
-    """Rota para deletar um professor pelo ID."""
+
+@professores_routes.route('/professores/<int:id_professor>', methods=['DELETE'])
+def rota_excluir_professor(id_professor):
     try:
         excluir_professor(id_professor)
-        return jsonify({"message": "Professor removido com sucesso"}), 200
-    except ValueError:
-        return jsonify({'error': 'Professor não encontrado'}), 404
+        return jsonify({'mensagem': 'Professor excluído com sucesso'})
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 404
