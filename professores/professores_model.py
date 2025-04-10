@@ -19,6 +19,10 @@ def professor_por_id(id_professor):
 def adicionar_professor(professor):
     if not isinstance(professor, dict):
         raise ValueError("Formato inválido de professor")
+    
+    if any(p["id"] == professor["id"] for p in dados["professores"]):
+        raise ValueError("Já existe um professor com esse id")
+    
     dados["professores"].append(professor)
 
 
