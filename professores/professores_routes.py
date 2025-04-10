@@ -29,8 +29,12 @@ def rota_adicionar_professor():
     novo_professor = request.get_json()
     if not novo_professor:
         return jsonify({'erro': 'Dados inválidos ou ausentes'}), 400
-    adicionar_professor(novo_professor)
-    return jsonify({'mensagem': 'Professor adicionado com sucesso'}), 201
+    
+    try:
+        adicionar_professor(novo_professor)
+        return jsonify({'mensagem': 'Professor adicionado com sucesso'}), 201
+    except ValueError as erro:
+        return jsonify({"erro": str(erro)}), 400
 
 
 @professores_routes.route('/professores/<int:id_professor>', methods=['PUT'])
