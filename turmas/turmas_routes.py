@@ -14,12 +14,18 @@ def rota_turma_por_id(id_turma):
         return jsonify(turma)
     except ValueError as erro:
         return jsonify({'erro': str(erro)}), 404
-
+    
 @turmas_routes.route('/turmas', methods=['POST'])
 def rota_adicionar_turma():
     nova_turma = request.get_json()
-    adicionar_turma(nova_turma)
-    return jsonify(nova_turma), 201  
+    if not nova_turma:
+        return jsonify({'erro': 'Dados inválidos'}), 400
+    try:
+        adicionar_turma(nova_turma)
+        return jsonify({'mensagem': 'Turma adicionada com sucesso'}), 201
+    except ValueError as erro:
+        return jsonify({'erro': str(erro)}), 400
+   
 
 @turmas_routes.route('/turmas/<int:id_turma>', methods=['PUT'])
 def rota_atualizar_turma(id_turma):
