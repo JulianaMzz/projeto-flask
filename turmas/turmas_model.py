@@ -14,6 +14,8 @@ def turma_por_id(id_turma):
     return turma
 
 def adicionar_turma(turma):
+    if any(t['id'] == turma["id"] for t in dados["turmas"]):
+        raise ValueError("Já existe uma turma com esse ID")
     dados["turmas"].append(turma)
 
 def atualizar_turma(id_turma, novos_dados):
