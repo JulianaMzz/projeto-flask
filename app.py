@@ -8,6 +8,10 @@ from config import Config
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    @app.route('/')
+    def home():
+        return "Bem-vindo à API escolar"
 
     app.register_blueprint(alunos_routes)
     app.register_blueprint(professores_routes)
@@ -16,7 +20,7 @@ def create_app():
 
     return app
 
-if __name__ == '_main_':
+if __name__ == '__main__':
     app = create_app()
     app.run(
         debug=app.config['DEBUG'],
