@@ -1,3 +1,5 @@
 Flask==2.3.3
-Flask-SQLAlchemy==2.5.1
-Flask-RESTX==0.12.0
+Flask-SQLAlchemy==3.1.1
+Flask-RESTX==1.1.0
+werkzeug==2.3.7
+SQLAlchemy==2.0.30
